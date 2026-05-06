@@ -1,0 +1,215 @@
+<html lang="zh-TW" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="透過風味滑桿，找到最適合你的手沖咖啡豆。調整酸度、甜感、苦度、厚實度，即時獲得推薦。">
+  <meta property="og:title" content="咖啡風味推薦">
+  <meta property="og:description" content="調整酸、甜、苦、厚實度，即時獲得最適合你的咖啡豆推薦">
+  <meta property="og:type" content="website">
+  <title>咖啡風味推薦</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
+    rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="18" cy="20" rx="12" ry="9" stroke="currentColor" stroke-width="2" />
+          <path d="M6 20c0-2 1.5-5 5-6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M30 20c0-2-1.5-5-5-6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M18 11V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M14 9c1-2 5-2 6 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M10 29h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <div class="brand-text">
+          <h1 class="brand-name">咖啡風味推薦</h1>
+          <p class="brand-tagline">找到屬於你的那杯咖啡</p>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="theme-toggle" aria-label="切換深色 / 淺色模式">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <g id="theme-icon">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+          </g>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- 模式標籤 -->
+    <div class="mode-tabs" role="tablist" aria-label="推薦模式選擇">
+      <button class="tab-btn tab-btn--active" id="tab-quiz" role="tab" aria-selected="true">
+        入門推薦
+      </button>
+      <button class="tab-btn" id="tab-slider" role="tab" aria-selected="false">
+        自選風味
+      </button>
+    </div>
+
+    <!-- 入門模式（排除法問卷，預設顯示） -->
+    <section id="quiz-section" aria-label="入門風味問卷">
+      <h2 class="section-title">找到你的第一杯</h2>
+      <p class="section-desc">回答 5 個簡單問題，我們幫你排除地雷、找出最適合的豆款</p>
+
+      <div class="progress-wrap">
+        <div class="progress-dots" id="progress-dots" aria-hidden="true"></div>
+        <span class="progress-text" id="progress-text">第 1 題，共 5 題</span>
+      </div>
+
+      <div class="question-card" id="question-card" aria-live="polite" aria-atomic="true">
+        <!-- 由 app.js 動態填入 -->
+      </div>
+
+      <div class="quiz-nav">
+        <button class="back-btn" id="quiz-back" aria-label="回上一題" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          上一題
+        </button>
+      </div>
+    </section>
+
+    <!-- 進階模式（風味滑桿，預設隱藏） -->
+    <section id="slider-section" aria-label="風味偏好設定" hidden>
+      <h2 class="section-title">你的風味偏好</h2>
+      <p class="section-desc">移動滑桿，每個分數旁有日常參照物幫助你感受強度</p>
+
+      <div class="sliders-grid">
+
+        <!-- 酸度 -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-label">
+              <span class="dim-zh">酸度</span>
+              <span class="dim-en">Acidity</span>
+            </div>
+            <span class="slider-value" id="val-acid">3</span>
+          </div>
+          <input type="range" min="1" max="5" value="3" step="1" id="slider-acid" aria-label="酸度偏好，1 到 5 分"
+            style="--fill: 50%">
+          <div class="slider-steps" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+          </div>
+          <div class="slider-ref" aria-live="polite">
+            <span class="ref-name" id="ref-name-acid">柳橙汁（現榨）</span>
+            <span class="ref-desc" id="ref-desc-acid">明顯但舒適的柑橘酸，有甜感平衡</span>
+          </div>
+        </div>
+
+        <!-- 甜感 -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-label">
+              <span class="dim-zh">甜感</span>
+              <span class="dim-en">Sweetness</span>
+            </div>
+            <span class="slider-value" id="val-sweet">3</span>
+          </div>
+          <input type="range" min="1" max="5" value="3" step="1" id="slider-sweet" aria-label="甜感偏好，1 到 5 分"
+            style="--fill: 50%">
+          <div class="slider-steps" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+          </div>
+          <div class="slider-ref" aria-live="polite">
+            <span class="ref-name" id="ref-name-sweet">蜂蜜水（1:10稀釋）</span>
+            <span class="ref-desc" id="ref-desc-sweet">清晰可辨的甜，不膩口</span>
+          </div>
+        </div>
+
+        <!-- 苦度 -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-label">
+              <span class="dim-zh">苦度</span>
+              <span class="dim-en">Bitterness</span>
+            </div>
+            <span class="slider-value" id="val-bitter">3</span>
+          </div>
+          <input type="range" min="1" max="5" value="3" step="1" id="slider-bitter" aria-label="苦度偏好，1 到 5 分"
+            style="--fill: 50%">
+          <div class="slider-steps" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+          </div>
+          <div class="slider-ref" aria-live="polite">
+            <span class="ref-name" id="ref-name-bitter">70% 黑巧克力</span>
+            <span class="ref-desc" id="ref-desc-bitter">明顯苦感但帶可可甜，質地乾淨</span>
+          </div>
+        </div>
+
+        <!-- 厚實度 -->
+        <div class="slider-group">
+          <div class="slider-header">
+            <div class="slider-label">
+              <span class="dim-zh">厚實度</span>
+              <span class="dim-en">Body</span>
+            </div>
+            <span class="slider-value" id="val-body">3</span>
+          </div>
+          <input type="range" min="1" max="5" value="3" step="1" id="slider-body" aria-label="厚實度偏好，1 到 5 分"
+            style="--fill: 50%">
+          <div class="slider-steps" aria-hidden="true">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+          </div>
+          <div class="slider-ref" aria-live="polite">
+            <span class="ref-name" id="ref-name-body">燕麥奶（原味）</span>
+            <span class="ref-desc" id="ref-desc-body">中等稠度，有存在感但不厚重</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 推薦結果（入門/進階模式共用，答完或滑桿互動後顯示） -->
+    <section id="results-section" aria-label="推薦結果" hidden>
+      <h2 class="section-title">為你推薦</h2>
+      <p class="section-desc" id="results-desc">根據你的偏好，從 8 款精品豆中挑出最接近的兩款</p>
+      <div class="results-grid" id="results-grid" aria-live="polite" aria-atomic="true">
+        <!-- 由 app.js 動態填入 -->
+      </div>
+    </section>
+
+    <!-- 雷達圖（入門/進階模式共用） -->
+    <section id="chart-section" aria-label="風味輪廓圖" hidden>
+      <h2 class="section-title">風味輪廓</h2>
+      <p class="chart-meta" id="chart-bean-name">最推薦豆款的完整感官評鑑</p>
+      <div class="chart-container">
+        <div class="chart-canvas-wrap">
+          <canvas id="radar-chart" role="img" aria-label="咖啡風味雷達圖，顯示七個感官維度的分布"></canvas>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>精品咖啡風味推薦系統 · 以 SCA 感官評鑑為基礎設計</p>
+  </footer>
+
+  <script src="data/beans.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
