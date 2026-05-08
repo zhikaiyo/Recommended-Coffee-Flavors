@@ -1,3 +1,172 @@
+// Canvas 精緻線條圖示（對應參考圖風格）
+function drawChartIcon(ctx, label, cx, cy, size) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.lineWidth = 1.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const s = size;
+
+  switch (label) {
+
+    case '酸度': {
+      // 柑橘切面：近圓形外框 + 頂部小葉 + 6 放射線 + 中心點（對應參考圖）
+      const r = s * 0.74;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.stroke();
+      // 頂部小葉（緊貼圓頂）
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.14, -r + s * 0.02);
+      ctx.bezierCurveTo(-s * 0.20, -r - s * 0.28, s * 0.20, -r - s * 0.28, s * 0.14, -r + s * 0.02);
+      ctx.stroke();
+      // 葉脈
+      ctx.beginPath();
+      ctx.moveTo(0, -r);
+      ctx.lineTo(0, -r - s * 0.18);
+      ctx.stroke();
+      // 6 放射線
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI * i) / 3;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(r * Math.cos(a), r * Math.sin(a));
+        ctx.stroke();
+      }
+      // 中心點
+      ctx.beginPath();
+      ctx.arc(0, 0, s * 0.09, 0, Math.PI * 2);
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.fill();
+      break;
+    }
+
+    case '甜感': {
+      // 四瓣花（45° 斜對角方向）+ 瓣尖小點 + 中心圓
+      for (let i = 0; i < 4; i++) {
+        ctx.save();
+        ctx.rotate((Math.PI / 2) * i + Math.PI / 4); // 45° 斜向起始
+        ctx.beginPath();
+        ctx.ellipse(0, -s * 0.48, s * 0.22, s * 0.44, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.92, s * 0.08, 0, Math.PI * 2);
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, s * 0.14, 0, Math.PI * 2);
+      ctx.stroke();
+      break;
+    }
+
+    case '苦度': {
+      // 兩顆咖啡豆並排：間距縮小，直立橢圓各帶中線
+      [-s * 0.32, s * 0.32].forEach(dx => {
+        ctx.beginPath();
+        ctx.ellipse(dx, 0, s * 0.26, s * 0.56, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(dx, -s * 0.50);
+        ctx.bezierCurveTo(dx + s * 0.13, -s * 0.15, dx - s * 0.13, s * 0.15, dx, s * 0.50);
+        ctx.stroke();
+      });
+      break;
+    }
+
+    case '厚實度': {
+      // 咖啡豆 + 外環（外環縮小，更貼合參考圖比例）
+      ctx.beginPath();
+      ctx.arc(0, 0, s * 0.82, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.save();
+      ctx.rotate(-Math.PI / 10);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 0.30, s * 0.54, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.48);
+      ctx.bezierCurveTo(s * 0.16, -s * 0.14, -s * 0.16, s * 0.14, 0, s * 0.48);
+      ctx.stroke();
+      ctx.restore();
+      break;
+    }
+
+    case '香氣': {
+      // 六瓣細長尖星（對應參考圖的星形香氣圖示）
+      for (let i = 0; i < 6; i++) {
+        const a  = (Math.PI * 2 * i) / 6 - Math.PI / 2; // 從頂部開始
+        const aL = a - Math.PI / 14;
+        const aR = a + Math.PI / 14;
+        ctx.beginPath();
+        ctx.moveTo(s * 0.16 * Math.cos(aL), s * 0.16 * Math.sin(aL));
+        ctx.quadraticCurveTo(
+          s * 0.44 * Math.cos(a), s * 0.44 * Math.sin(a),
+          s * 0.90 * Math.cos(a), s * 0.90 * Math.sin(a)
+        );
+        ctx.quadraticCurveTo(
+          s * 0.44 * Math.cos(a), s * 0.44 * Math.sin(a),
+          s * 0.16 * Math.cos(aR), s * 0.16 * Math.sin(aR)
+        );
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, s * 0.14, 0, Math.PI * 2);
+      ctx.stroke();
+      break;
+    }
+
+    case '風味': {
+      // 三道 S 形上升蒸氣（對稱排列，左右互反）
+      [
+        { ox: -s * 0.26, d:  1 },
+        { ox:  0,        d: -1 },
+        { ox:  s * 0.26, d:  1 },
+      ].forEach(({ ox, d }) => {
+        ctx.beginPath();
+        ctx.moveTo(ox, s * 0.50);
+        ctx.bezierCurveTo(
+          ox + d * s * 0.20,  s * 0.20,
+          ox - d * s * 0.20, -s * 0.20,
+          ox,                -s * 0.50
+        );
+        ctx.bezierCurveTo(
+          ox + d * s * 0.16, -s * 0.68,
+          ox - d * s * 0.10, -s * 0.84,
+          ox,                -s * 0.94
+        );
+        ctx.stroke();
+      });
+      break;
+    }
+
+    case '餘韻': {
+      // 三層漸寬橢圓堆疊 + 側連線（層疊蛋糕輪廓）
+      [
+        { rx: s * 0.28, ry: s * 0.10, oy: -s * 0.50 },
+        { rx: s * 0.52, ry: s * 0.13, oy: -s * 0.08 },
+        { rx: s * 0.78, ry: s * 0.17, oy:  s * 0.42 },
+      ].forEach(({ rx, ry, oy }) => {
+        ctx.beginPath();
+        ctx.ellipse(0, oy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.28, -s * 0.50);
+      ctx.lineTo(-s * 0.78,  s * 0.42);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo( s * 0.28, -s * 0.50);
+      ctx.lineTo( s * 0.78,  s * 0.42);
+      ctx.stroke();
+      break;
+    }
+  }
+
+  ctx.restore();
+}
+
 // =============================================
 // 問題資料（入門模式專用）
 // =============================================
@@ -134,7 +303,7 @@ function getPreferences() {
 // =============================================
 // 呈現層（View Layer）— 只負責畫面顯示
 // =============================================
-let radarChart = null;
+let coffeeRadar = null;
 
 function renderDots(score) {
   return Array.from({ length: 5 }, (_, i) =>
@@ -206,83 +375,214 @@ function renderResults(results) {
   grid.innerHTML = results.map((bean, i) => renderBeanCard(bean, i)).join('');
 }
 
-function getChartColors() {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  return {
-    borderColor:      isDark ? 'rgba(196, 151, 106, 0.9)' : 'rgba(107, 63, 42, 0.9)',
-    backgroundColor:  isDark ? 'rgba(196, 151, 106, 0.12)' : 'rgba(107, 63, 42, 0.08)',
-    pointColor:       isDark ? '#C4976A' : '#6B3F2A',
-    gridColor:        isDark ? 'rgba(196, 151, 106, 0.15)' : 'rgba(107, 63, 42, 0.12)',
-    labelColor:       isDark ? '#C4A882' : '#5C3D2E',
-    tickColor:        isDark ? 'rgba(196, 151, 106, 0.4)' : 'rgba(107, 63, 42, 0.3)',
-  };
+// =============================================
+// 純 Canvas 雷達圖（Route B）
+// =============================================
+class CoffeeRadar {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx    = canvas.getContext('2d');
+    this.labels = ['酸度', '甜感', '苦度', '厚實度', '香氣', '風味', '餘韻'];
+    this.data   = [3, 3, 3, 3, 3, 3, 3];
+    this._animFrom  = null;
+    this._animTo    = null;
+    this._animStart = null;
+    this._animDur   = 500;
+    this._animId    = null;
+    this.resize();
+  }
+
+  resize() {
+    const wrap = this.canvas.parentElement;
+    const size = Math.min(wrap.clientWidth || 320, 480);
+    this.canvas.width  = size;
+    this.canvas.height = size;
+    this.cx     = size / 2;
+    this.cy     = size / 2;
+    this.r      = size * 0.26;
+    this.labelR = size * 0.47;
+    this.iconR  = size * 0.37;
+  }
+
+  getColors() {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+      gridLine: dark ? 'rgba(212,174,80,0.18)' : 'rgba(140,100,40,0.28)',
+      axisLine: dark ? 'rgba(212,174,80,0.22)' : 'rgba(130,90,35,0.35)',
+      fill:     dark ? 'rgba(212,174,80,0.12)'  : 'rgba(220,185,110,0.18)',
+      glow:     dark ? [255, 218, 140] : [255, 200, 130],
+      label:    dark ? '#D8BC78' : '#3A1E05',
+      icon:     dark ? 'rgba(212,174,80,0.85)' : 'rgba(110,70,15,0.80)',
+      tick:     dark ? 'rgba(212,174,80,0.55)' : 'rgba(80,48,10,0.82)',
+    };
+  }
+
+  polyPath(values) {
+    const n = this.labels.length;
+    const ctx = this.ctx;
+    ctx.beginPath();
+    values.forEach((v, i) => {
+      const angle = (2 * Math.PI * i / n) - Math.PI / 2;
+      const dist  = (v / 5) * this.r;
+      const x = this.cx + dist * Math.cos(angle);
+      const y = this.cy + dist * Math.sin(angle);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+  }
+
+  draw() {
+    const { canvas, ctx, cx, cy, r, labelR, iconR } = this;
+    const n = this.labels.length;
+    const c = this.getColors();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 1. 同心多邊形格線（5 圈）
+    for (let ring = 1; ring <= 5; ring++) {
+      const rr = (ring / 5) * r;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const a = (2 * Math.PI * i / n) - Math.PI / 2;
+        const x = cx + rr * Math.cos(a);
+        const y = cy + rr * Math.sin(a);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = c.gridLine;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    // 2. 刻度數字（沿第一軸旁）
+    ctx.font = `${Math.max(9, canvas.width * 0.022)}px 'DM Sans', sans-serif`;
+    ctx.fillStyle = c.tick;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let ring = 1; ring <= 5; ring++) {
+      const rr = (ring / 5) * r;
+      const a  = -Math.PI / 2 - 0.22;
+      ctx.fillText(ring, cx + rr * Math.cos(a), cy + rr * Math.sin(a));
+    }
+
+    // 3. 放射軸線
+    for (let i = 0; i < n; i++) {
+      const a = (2 * Math.PI * i / n) - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+      ctx.strokeStyle = c.axisLine;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    // 4. 資料多邊形填充
+    this.polyPath(this.data);
+    ctx.fillStyle = c.fill;
+    ctx.fill();
+
+    // 5. 多重發光邊線（外暈淺黃橘漸層、核心線 LED 白色發光）
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    // 淺黃橘：比金色更暖更亮，像暖色燈源暈散出去的色調
+    const outerRgb = isDark ? '255,200,100' : '255,178,72';
+    const [gr, gg, gb] = isDark ? [255, 200, 100] : [255, 178, 72];
+    [
+      // 外暈：淺黃橘，由寬到窄逐層加深，模擬向外淡出的漸層光暈
+      { lw: 18,  a: 0.020, white: false },
+      { lw: 11,  a: 0.060, white: false },
+      { lw: 6.0, a: 0.140, white: false },
+      // LED bloom：白色擴散層，由外到內愈來愈亮
+      { lw: 5.0, a: 0.18,  white: true  },
+      { lw: 3.0, a: 0.42,  white: true  },
+      { lw: 1.6, a: 0.76,  white: true  },
+      // LED 核心白線：極亮，模擬燈管通電瞬間的銳利白光
+      { lw: 0.8, a: 1.0,   white: true  },
+    ].forEach(({ lw, a, white }) => {
+      this.polyPath(this.data);
+      ctx.strokeStyle = white ? `rgba(255,255,255,${a})` : `rgba(${outerRgb},${a})`;
+      ctx.lineWidth = lw;
+      ctx.stroke();
+    });
+
+    // 6. 發光頂點（外暈淺黃橘，實心點純白 LED）
+    this.data.forEach((v, i) => {
+      const angle = (2 * Math.PI * i / n) - Math.PI / 2;
+      const dist  = (v / 5) * r;
+      const px = cx + dist * Math.cos(angle);
+      const py = cy + dist * Math.sin(angle);
+      // 外暈（淺黃橘漸層）
+      const grad = ctx.createRadialGradient(px, py, 0, px, py, 7);
+      grad.addColorStop(0,   `rgba(${gr},${gg},${gb},0.70)`);
+      grad.addColorStop(0.5, `rgba(${gr},${gg},${gb},0.25)`);
+      grad.addColorStop(1,   `rgba(${gr},${gg},${gb},0)`);
+      ctx.beginPath();
+      ctx.arc(px, py, 7, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      // 白色 LED 實心點
+      ctx.beginPath();
+      ctx.arc(px, py, 3.0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,1.0)';
+      ctx.fill();
+    });
+
+    // 7. 線條圖示 + 標籤文字
+    const iconSize = Math.max(10, canvas.width * 0.036);
+    const fontSize = Math.max(11, canvas.width * 0.030);
+    ctx.textBaseline = 'middle';
+
+    this.labels.forEach((label, i) => {
+      const angle = (2 * Math.PI * i / n) - Math.PI / 2;
+      const ix = cx + iconR * Math.cos(angle);
+      const iy = cy + iconR * Math.sin(angle);
+      const lx = cx + labelR * Math.cos(angle);
+      const ly = cy + labelR * Math.sin(angle);
+
+      ctx.strokeStyle = c.icon;
+      ctx.lineWidth = 1.2;
+      drawChartIcon(ctx, label, ix, iy, iconSize);
+
+      ctx.font = `600 ${fontSize}px 'Cormorant Garamond', Georgia, serif`;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = c.label;
+      ctx.fillText(label, lx, ly);
+    });
+  }
+
+  setData(newData) {
+    if (this._animId) cancelAnimationFrame(this._animId);
+    this._animFrom  = [...this.data];
+    this._animTo    = newData;
+    this._animStart = null;
+    const step = (ts) => {
+      if (!this._animStart) this._animStart = ts;
+      const p    = Math.min((ts - this._animStart) / this._animDur, 1);
+      const ease = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
+      this.data  = this._animFrom.map((from, i) => from + (this._animTo[i] - from) * ease);
+      this.draw();
+      if (p < 1) {
+        this._animId = requestAnimationFrame(step);
+      } else {
+        this.data    = [...this._animTo];
+        this._animId = null;
+      }
+    };
+    this._animId = requestAnimationFrame(step);
+  }
 }
 
 function renderChart(bean) {
-  const ctx = document.getElementById('radar-chart').getContext('2d');
+  const canvas = document.getElementById('radar-chart');
   const data = [bean.acid, bean.sweet, bean.bitter, bean.body, bean.aroma, bean.flavor, bean.aftertaste];
-  const colors = getChartColors();
 
-  if (radarChart) {
-    radarChart.data.datasets[0].data = data;
-    radarChart.data.datasets[0].label = bean.name;
-    radarChart.data.datasets[0].borderColor = colors.borderColor;
-    radarChart.data.datasets[0].backgroundColor = colors.backgroundColor;
-    radarChart.data.datasets[0].pointBackgroundColor = colors.pointColor;
-    radarChart.options.scales.r.grid.color = colors.gridColor;
-    radarChart.options.scales.r.pointLabels.color = colors.labelColor;
-    radarChart.options.scales.r.ticks.color = colors.tickColor;
-    radarChart.update();
-    return;
+  if (!coffeeRadar) {
+    coffeeRadar = new CoffeeRadar(canvas);
+    new ResizeObserver(() => {
+      coffeeRadar.resize();
+      coffeeRadar.draw();
+    }).observe(canvas.parentElement);
   }
 
-  radarChart = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: ['酸度', '甜感', '苦度', '厚實度', '香氣', '風味', '餘韻'],
-      datasets: [{
-        label: bean.name,
-        data,
-        borderColor: colors.borderColor,
-        backgroundColor: colors.backgroundColor,
-        pointBackgroundColor: colors.pointColor,
-        pointBorderColor: 'transparent',
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        borderWidth: 2,
-      }],
-    },
-    options: {
-      animation: { duration: 400, easing: 'easeInOutQuart' },
-      scales: {
-        r: {
-          min: 0,
-          max: 5,
-          ticks: {
-            stepSize: 1,
-            display: true,
-            color: colors.tickColor,
-            font: { size: 10, family: "'DM Sans', sans-serif" },
-            backdropColor: 'transparent',
-          },
-          grid: { color: colors.gridColor },
-          angleLines: { color: colors.gridColor },
-          pointLabels: {
-            color: colors.labelColor,
-            font: { size: 13, family: "'DM Sans', sans-serif", weight: '500' },
-          },
-        },
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.label}：${ctx.raw} 分`,
-          },
-        },
-      },
-    },
-  });
+  coffeeRadar.setData(data);
 }
 
 function showResultsSections(show) {
@@ -525,16 +825,7 @@ function bindThemeToggle() {
     root.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
     updateThemeIcon(next);
-    if (radarChart) {
-      const colors = getChartColors();
-      radarChart.data.datasets[0].borderColor      = colors.borderColor;
-      radarChart.data.datasets[0].backgroundColor  = colors.backgroundColor;
-      radarChart.data.datasets[0].pointBackgroundColor = colors.pointColor;
-      radarChart.options.scales.r.grid.color        = colors.gridColor;
-      radarChart.options.scales.r.pointLabels.color = colors.labelColor;
-      radarChart.options.scales.r.ticks.color       = colors.tickColor;
-      radarChart.update();
-    }
+    if (coffeeRadar) coffeeRadar.draw();
   });
 }
 
