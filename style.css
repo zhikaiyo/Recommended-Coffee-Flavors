@@ -561,11 +561,11 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   opacity: 0.16;
 }
 
-@media (min-width: 580px) {
+@media (min-width: 360px) {
   .bean-card__split {
     flex-direction: row;
     align-items: stretch;
-    gap: 18px;
+    gap: 14px;
   }
 
   .bean-card__split-left {
