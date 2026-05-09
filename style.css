@@ -496,6 +496,27 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   justify-content: space-between;
 }
 
+.bean-card__tasting {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  font-style: italic;
+  letter-spacing: 0.01em;
+  padding: 14px 16px;
+  background: linear-gradient(135deg,
+    rgba(196, 154, 53, 0.08) 0%,
+    rgba(138, 85, 24, 0.04) 100%);
+  border-left: 3px solid var(--accent-gold);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+[data-theme="dark"] .bean-card__tasting {
+  background: linear-gradient(135deg,
+    rgba(212, 174, 80, 0.10) 0%,
+    rgba(212, 174, 80, 0.04) 100%);
+}
+
 .bean-card__rank {
   font-size: 0.68rem;
   font-weight: 600;

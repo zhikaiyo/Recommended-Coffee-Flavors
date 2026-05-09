@@ -320,6 +320,8 @@ function renderBeanCard(bean, rank) {
         <div class="bean-card__match">${bean.match}%<span class="match-label"> 匹配</span></div>
       </div>
 
+      <p class="bean-card__tasting">${bean.tasting}</p>
+
       <div class="bean-card__body">
         <h3 class="bean-name">${bean.name}</h3>
         <p class="bean-name-en">${bean.nameEn}</p>
