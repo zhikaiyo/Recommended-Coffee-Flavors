@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 
 <body>
@@ -99,9 +99,21 @@
         <!-- 酸度 -->
         <div class="slider-group">
           <div class="slider-header">
-            <div class="slider-label">
-              <span class="dim-zh">酸度</span>
-              <span class="dim-en">Acidity</span>
+            <div class="slider-pill slider-pill--acid">
+              <span class="slider-pill__icon">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <circle cx="10" cy="10" r="6.5" fill="none" stroke-width="0.9"/>
+                  <line x1="10" y1="3.5" x2="10" y2="16.5" stroke-width="0.55"/>
+                  <line x1="3.5" y1="10" x2="16.5" y2="10" stroke-width="0.55"/>
+                  <line x1="5.6" y1="5.6" x2="14.4" y2="14.4" stroke-width="0.55"/>
+                  <line x1="5.6" y1="14.4" x2="14.4" y2="5.6" stroke-width="0.55"/>
+                  <circle cx="10" cy="10" r="0.7" fill="currentColor" stroke="none"/>
+                </svg>
+              </span>
+              <div class="slider-pill__label">
+                <span class="slider-pill__zh">酸度</span>
+                <span class="slider-pill__en">ACIDITY</span>
+              </div>
             </div>
             <span class="slider-value" id="val-acid">3</span>
           </div>
@@ -119,9 +131,17 @@
         <!-- 甜感 -->
         <div class="slider-group">
           <div class="slider-header">
-            <div class="slider-label">
-              <span class="dim-zh">甜感</span>
-              <span class="dim-en">Sweetness</span>
+            <div class="slider-pill slider-pill--sweet">
+              <span class="slider-pill__icon">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M10 3 Q5.5 9 5.5 12.5 Q5.5 16 10 16 Q14.5 16 14.5 12.5 Q14.5 9 10 3 Z" fill="none" stroke-width="0.9"/>
+                  <ellipse cx="8.4" cy="11.2" rx="0.9" ry="1.4" fill="currentColor" stroke="none" opacity="0.55"/>
+                </svg>
+              </span>
+              <div class="slider-pill__label">
+                <span class="slider-pill__zh">甜感</span>
+                <span class="slider-pill__en">SWEETNESS</span>
+              </div>
             </div>
             <span class="slider-value" id="val-sweet">3</span>
           </div>
@@ -139,9 +159,17 @@
         <!-- 苦度 -->
         <div class="slider-group">
           <div class="slider-header">
-            <div class="slider-label">
-              <span class="dim-zh">苦度</span>
-              <span class="dim-en">Bitterness</span>
+            <div class="slider-pill slider-pill--bitter">
+              <span class="slider-pill__icon">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <ellipse cx="10" cy="10" rx="4.5" ry="6.5" fill="none" stroke-width="0.9"/>
+                  <path d="M10 4 Q12.5 8 11 10 Q9.5 12 12 16" fill="none" stroke-width="0.85"/>
+                </svg>
+              </span>
+              <div class="slider-pill__label">
+                <span class="slider-pill__zh">苦度</span>
+                <span class="slider-pill__en">BITTERNESS</span>
+              </div>
             </div>
             <span class="slider-value" id="val-bitter">3</span>
           </div>
@@ -159,9 +187,20 @@
         <!-- 厚實度 -->
         <div class="slider-group">
           <div class="slider-header">
-            <div class="slider-label">
-              <span class="dim-zh">厚實度</span>
-              <span class="dim-en">Body</span>
+            <div class="slider-pill slider-pill--body">
+              <span class="slider-pill__icon">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <ellipse cx="10" cy="6" rx="5.5" ry="1.2" fill="none" stroke-width="0.85"/>
+                  <ellipse cx="10" cy="10" rx="5.5" ry="1.2" fill="none" stroke-width="0.85"/>
+                  <ellipse cx="10" cy="14" rx="5.5" ry="1.2" fill="none" stroke-width="0.85"/>
+                  <line x1="4.5" y1="6" x2="4.5" y2="14" stroke-width="0.6"/>
+                  <line x1="15.5" y1="6" x2="15.5" y2="14" stroke-width="0.6"/>
+                </svg>
+              </span>
+              <div class="slider-pill__label">
+                <span class="slider-pill__zh">厚實度</span>
+                <span class="slider-pill__en">BODY</span>
+              </div>
             </div>
             <span class="slider-value" id="val-body">3</span>
           </div>
@@ -205,8 +244,8 @@
     <p>精品咖啡風味推薦系統 · 以 SCA 感官評鑑為基礎設計</p>
   </footer>
 
-  <script src="data/beans.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="data/beans.js?v=6"></script>
+  <script src="app.js?v=6"></script>
 </body>
 
 </html>
