@@ -168,6 +168,70 @@ function drawChartIcon(ctx, label, cx, cy, size) {
 }
 
 // =============================================
+// 風味標籤主題分組（對應 4 種色系與圖示）
+// =============================================
+const FLAVOR_THEMES = {
+  // berry — 海軍藍 #2F3E4E
+  '藍莓': 'berry', '黑醋栗': 'berry', '莓果': 'berry',
+  '番茄': 'berry', '蘋果': 'berry', '水蜜桃': 'berry',
+
+  // wine — 橄欖綠 #4D5A3A
+  '葡萄酒': 'wine', '花香': 'wine', '茉莉': 'wine', '檸檬': 'wine',
+  '佛手柑': 'wine', '柑橘': 'wine', '熱帶水果': 'wine',
+
+  // wild — 古銅褐 #7A5A3A
+  '野性': 'wild', '黑巧克力': 'wild', '巧克力': 'wild', '堅果': 'wild',
+  '花生': 'wild', '焦糖': 'wild', '蜂蜜': 'wild',
+  '泥土': 'wild', '醇厚': 'wild',
+
+  // fermented — 森林綠 #4E6B56
+  '發酵感': 'fermented', '草本': 'fermented', '杉木': 'fermented',
+  '奶油': 'fermented', '柔和': 'fermented', '均衡': 'fermented', '低酸': 'fermented',
+};
+
+const FLAVOR_ICONS = {
+  // 莓果：三顆莓果 + 葉
+  berry: `<svg viewBox="0 0 20 20" aria-hidden="true">
+    <circle cx="6.8" cy="13.2" r="2.7" fill="none" stroke-width="1.1"/>
+    <circle cx="13.2" cy="13.2" r="2.7" fill="none" stroke-width="1.1"/>
+    <circle cx="10" cy="9" r="2.7" fill="none" stroke-width="1.1"/>
+    <circle cx="6.8" cy="13.2" r="0.55" fill="currentColor" stroke="none"/>
+    <circle cx="13.2" cy="13.2" r="0.55" fill="currentColor" stroke="none"/>
+    <circle cx="10" cy="9" r="0.55" fill="currentColor" stroke="none"/>
+    <path d="M9.4 6 Q11 3.2 13.5 4" stroke-width="0.9" fill="none"/>
+    <path d="M11.5 4 L13.6 3" stroke-width="0.9" fill="none"/>
+  </svg>`,
+
+  // 葡萄串
+  wine: `<svg viewBox="0 0 20 20" aria-hidden="true">
+    <circle cx="7" cy="10" r="1.7" fill="none" stroke-width="0.95"/>
+    <circle cx="10.5" cy="10" r="1.7" fill="none" stroke-width="0.95"/>
+    <circle cx="14" cy="10" r="1.7" fill="none" stroke-width="0.95"/>
+    <circle cx="8.6" cy="13.2" r="1.7" fill="none" stroke-width="0.95"/>
+    <circle cx="12.4" cy="13.2" r="1.7" fill="none" stroke-width="0.95"/>
+    <circle cx="10.5" cy="16.4" r="1.7" fill="none" stroke-width="0.95"/>
+    <path d="M10.5 7.5 L11.2 4.5 Q13 3.5 14.5 4.5" stroke-width="0.95" fill="none"/>
+  </svg>`,
+
+  // 山稜 + 太陽
+  wild: `<svg viewBox="0 0 20 20" aria-hidden="true">
+    <path d="M2.5 15 L7 8.5 L11 12 L13.5 9 L17.5 15 Z" stroke-width="1.1" fill="none" stroke-linejoin="round"/>
+    <circle cx="14" cy="5.8" r="1.7" fill="none" stroke-width="0.9"/>
+  </svg>`,
+
+  // 葉片（雙葉 + 葉脈）
+  fermented: `<svg viewBox="0 0 20 20" aria-hidden="true">
+    <path d="M10 4.2 Q5.5 7 6.5 12.5 Q9 13.5 10 9.5" stroke-width="1.05" fill="none" stroke-linejoin="round"/>
+    <path d="M10 4.2 Q14.5 7 13.5 12.5 Q11 13.5 10 9.5" stroke-width="1.05" fill="none" stroke-linejoin="round"/>
+    <line x1="10" y1="4.2" x2="10" y2="16" stroke-width="0.95"/>
+  </svg>`,
+};
+
+function getFlavorTheme(flavor) {
+  return FLAVOR_THEMES[flavor] || 'wild';
+}
+
+// =============================================
 // 問題資料（入門模式專用）
 // =============================================
 const QUESTIONS = [
@@ -307,7 +371,12 @@ let coffeeRadar = null;
 
 function renderDots(score) {
   return Array.from({ length: 5 }, (_, i) =>
-    `<span class="dot ${i < score ? 'filled' : ''}"></span>`
+    `<svg class="bean-dot ${i < score ? 'bean-dot--filled' : ''}" viewBox="0 0 12 16" aria-hidden="true">
+      <g transform="rotate(-14 6 8)">
+        <ellipse cx="6" cy="8" rx="4.3" ry="7"/>
+        <path class="bean-dot__groove" d="M6 1.8 Q3.6 5 4.2 8 Q4.8 11 6 14.2" fill="none"/>
+      </g>
+    </svg>`
   ).join('');
 }
 
@@ -320,53 +389,87 @@ function renderBeanCard(bean, rank) {
         <div class="bean-card__match">${bean.match}%<span class="match-label"> 匹配</span></div>
       </div>
 
-      <p class="bean-card__tasting">${bean.tasting}</p>
-
       <div class="bean-card__body">
-        <h3 class="bean-name">${bean.name}</h3>
-        <p class="bean-name-en">${bean.nameEn}</p>
+        <div class="bean-card__split">
+          <div class="bean-card__split-left">
+            <h3 class="bean-name">${bean.name}</h3>
+            <p class="bean-name-en">${bean.nameEn}</p>
 
-        <div class="bean-meta">
-          <div class="bean-meta__item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-              <circle cx="12" cy="9" r="2.5"/>
-            </svg>
-            ${bean.origin}
+            <div class="bean-meta">
+              <div class="bean-meta__item">
+                <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="#A83838" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                  <circle fill="#FFFFFF" cx="12" cy="9" r="2.5"/>
+                </svg>
+                <span class="bean-meta__text">${bean.origin}</span>
+              </div>
+              <div class="bean-meta__item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <path d="M3 9h18M9 21V9"/>
+                </svg>
+                <span class="bean-meta__text">${bean.estate}</span>
+              </div>
+            </div>
+
+            <span class="process-tag">${bean.process}</span>
           </div>
-          <div class="bean-meta__item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M3 9h18M9 21V9"/>
-            </svg>
-            ${bean.estate}
+
+          <div class="bean-card__split-right">
+            <div class="bean-card__tasting">
+              <svg class="bean-card__leaf-decor" viewBox="0 0 100 80" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M88 8 Q72 18 58 28 Q44 40 32 56 Q24 66 16 72" stroke-width="0.7"/>
+                <path d="M72 14 Q80 7 88 11 Q83 20 72 14 Z" stroke-width="0.55"/>
+                <line x1="72" y1="14" x2="86" y2="11" stroke-width="0.4"/>
+                <path d="M58 28 Q64 19 74 24 Q66 32 58 28 Z" stroke-width="0.55"/>
+                <line x1="58" y1="28" x2="73" y2="24" stroke-width="0.4"/>
+                <path d="M52 32 Q42 26 36 34 Q44 42 52 32 Z" stroke-width="0.55"/>
+                <line x1="52" y1="32" x2="37" y2="34" stroke-width="0.4"/>
+                <path d="M44 48 Q50 39 60 44 Q53 53 44 48 Z" stroke-width="0.55"/>
+                <line x1="44" y1="48" x2="59" y2="44" stroke-width="0.4"/>
+                <path d="M40 52 Q30 47 24 56 Q32 63 40 52 Z" stroke-width="0.55"/>
+                <line x1="40" y1="52" x2="25" y2="56" stroke-width="0.4"/>
+                <circle cx="50" cy="40" r="2.6" stroke-width="0.5"/>
+                <circle cx="54.5" cy="44" r="2.6" stroke-width="0.5"/>
+                <circle cx="45.5" cy="44" r="2.6" stroke-width="0.5"/>
+              </svg>
+              <p class="bean-card__tasting-text">${bean.tasting}</p>
+            </div>
           </div>
         </div>
 
-        <span class="process-tag">${bean.process}</span>
-      </div>
-
-      <div class="bean-card__scores">
-        <div class="score-row">
-          <span class="score-dim">酸度</span>
-          <div class="score-dots" aria-label="酸度 ${bean.acid} 分">${renderDots(bean.acid)}</div>
-        </div>
-        <div class="score-row">
-          <span class="score-dim">甜感</span>
-          <div class="score-dots" aria-label="甜感 ${bean.sweet} 分">${renderDots(bean.sweet)}</div>
-        </div>
-        <div class="score-row">
-          <span class="score-dim">苦度</span>
-          <div class="score-dots" aria-label="苦度 ${bean.bitter} 分">${renderDots(bean.bitter)}</div>
-        </div>
-        <div class="score-row">
-          <span class="score-dim">厚實</span>
-          <div class="score-dots" aria-label="厚實度 ${bean.body} 分">${renderDots(bean.body)}</div>
+        <div class="bean-card__scores-box">
+          <div class="bean-card__scores">
+            <div class="score-row">
+              <span class="score-dim">酸度</span>
+              <div class="score-dots" aria-label="酸度 ${bean.acid} 分">${renderDots(bean.acid)}</div>
+            </div>
+            <div class="score-row">
+              <span class="score-dim">甜感</span>
+              <div class="score-dots" aria-label="甜感 ${bean.sweet} 分">${renderDots(bean.sweet)}</div>
+            </div>
+            <div class="score-row">
+              <span class="score-dim">苦度</span>
+              <div class="score-dots" aria-label="苦度 ${bean.bitter} 分">${renderDots(bean.bitter)}</div>
+            </div>
+            <div class="score-row">
+              <span class="score-dim">厚實</span>
+              <div class="score-dots" aria-label="厚實度 ${bean.body} 分">${renderDots(bean.body)}</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="bean-card__tags">
-        ${bean.tags.map(t => `<span class="flavor-tag">${t}</span>`).join('')}
+        ${bean.tags.map(t => {
+          const theme = getFlavorTheme(t);
+          return `
+            <span class="flavor-tag flavor-tag--${theme}">
+              <span class="flavor-tag__icon">${FLAVOR_ICONS[theme]}</span>
+              <span class="flavor-tag__text">${t}</span>
+            </span>
+          `;
+        }).join('')}
       </div>
     </article>
   `;
