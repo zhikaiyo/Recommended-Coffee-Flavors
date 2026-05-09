@@ -383,7 +383,7 @@ function renderDots(score) {
 function renderBeanCard(bean, rank) {
   const rankLabel = rank === 0 ? '最推薦' : '次推薦';
   return `
-    <article class="bean-card ${rank === 0 ? 'bean-card--primary' : ''}" aria-label="${bean.name} 推薦結果">
+    <article class="bean-card ${rank === 0 ? 'bean-card--primary' : ''}" data-bean-id="${bean.id}" aria-label="${bean.name} 推薦結果">
       <div class="bean-card__header">
         <div class="bean-card__rank">${rankLabel}</div>
         <div class="bean-card__match">${bean.match}%<span class="match-label"> 匹配</span></div>

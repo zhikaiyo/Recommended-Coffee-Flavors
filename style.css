@@ -877,6 +877,66 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   border-color: rgba(0, 0, 0, 0.50);
 }
 
+/* ===== 藍山卡片：霧化版風味標籤示範（皮革顆粒感）===== */
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag {
+  position: relative;
+  isolation: isolate;
+  box-shadow:
+    0 2px 5px rgba(20, 15, 5, 0.14),
+    0 1px 1.5px rgba(20, 15, 5, 0.07);
+}
+
+/* SVG 雜訊紋理層：在底色上疊細顆粒 + overlay 混合模式 */
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 圖示與文字提到雜訊層之上，保持金色乾淨 */
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag__icon,
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag__text {
+  position: relative;
+  z-index: 1;
+}
+
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 3px 7px rgba(20, 15, 5, 0.18),
+    0 1px 2px rgba(20, 15, 5, 0.10);
+}
+
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag__icon {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag__text {
+  text-shadow: none;
+}
+
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag--berry {
+  background: linear-gradient(145deg, #4A6080 0%, #2F3E4E 55%, #1F2A36 100%);
+}
+
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag--wine {
+  background: linear-gradient(145deg, #6A7C50 0%, #4D5A3A 55%, #353F2A 100%);
+}
+
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag--wild {
+  background: linear-gradient(145deg, #9C7C50 0%, #7A5A3A 55%, #5A4225 100%);
+}
+
+.bean-card[data-bean-id="blue-mountain"] .flavor-tag--fermented {
+  background: linear-gradient(145deg, #6E8E78 0%, #4E6B56 55%, #36493D 100%);
+}
+
 /* ============================================
    Radar Chart
    ============================================ */
