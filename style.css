@@ -293,31 +293,14 @@ body::after {
    ============================================ */
 .sliders-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px 14px;
+  grid-template-columns: 1fr;
+  gap: 32px;
 }
 
 @media (min-width: 640px) {
   .sliders-grid {
+    grid-template-columns: 1fr 1fr;
     gap: 28px 40px;
-  }
-}
-
-/* 極窄螢幕（iPhone SE 320px 等）隱藏英文副標、縮小 icon，避免膠囊爆出格 */
-@media (max-width: 380px) {
-  .slider-pill__en {
-    display: none;
-  }
-  .slider-pill__icon {
-    width: 32px;
-    height: 32px;
-  }
-  .slider-pill__icon svg {
-    width: 17px;
-    height: 17px;
-  }
-  .slider-pill__zh {
-    font-size: 1.05rem;
   }
 }
 
