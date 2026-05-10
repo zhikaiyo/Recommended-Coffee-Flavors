@@ -390,15 +390,15 @@ body::after {
 
 /* 4 主題色（套用在 icon 圓圈上） */
 .slider-pill--acid .slider-pill__icon {
-  background: linear-gradient(145deg, #9C4255 0%, #7A3340 55%, #5A1F2A 100%);
+  background: linear-gradient(145deg, #4F617A 0%, #323E4B 55%, #212A34 100%);
 }
 
 .slider-pill--sweet .slider-pill__icon {
-  background: linear-gradient(145deg, #9C7C50 0%, #7A5A3A 55%, #5A4225 100%);
+  background: linear-gradient(145deg, #D4A858 0%, #B58730 55%, #7C5614 100%);
 }
 
 .slider-pill--bitter .slider-pill__icon {
-  background: linear-gradient(145deg, #4A6080 0%, #2F3E4E 55%, #1F2A36 100%);
+  background: linear-gradient(145deg, #A06040 0%, #7A4A2A 55%, #5A3318 100%);
 }
 
 .slider-pill--body .slider-pill__icon {
@@ -464,9 +464,9 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* 4 個滑桿軌道色：對齊 icon 圓圈主題色（再提亮一階）*/
-#slider-acid   { --track-color: #A45264; }
-#slider-sweet  { --track-color: #9E7E58; }
-#slider-bitter { --track-color: #54688A; }
+#slider-acid   { --track-color: #596984; }
+#slider-sweet  { --track-color: #C49640; }
+#slider-bitter { --track-color: #A86E48; }
 #slider-body   { --track-color: #74937C; }
 
 input[type="range"]:focus-visible::-webkit-slider-thumb {
