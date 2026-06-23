@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=30">
+  <link rel="stylesheet" href="style.css?v=31">
 </head>
 
 <body>
@@ -34,8 +34,8 @@
           <path d="M10 29h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
         <div class="brand-text">
-          <h1 class="brand-name">咖啡風味推薦</h1>
-          <p class="brand-tagline">找到屬於你的那杯咖啡</p>
+          <h1 class="brand-name">Coffee Flavor Atelier</h1>
+          <p class="brand-tagline">用風味找到剛剛好的咖啡</p>
         </div>
       </div>
 
@@ -43,6 +43,31 @@
   </header>
 
   <main class="main">
+
+    <!-- 溫暖精品咖啡館入口 -->
+    <section class="atelier-hero" aria-labelledby="atelier-hero-title">
+      <div class="atelier-hero__copy">
+        <p class="chapter-mark">BARISTA GUIDE</p>
+        <h2 class="atelier-hero__title" id="atelier-hero-title">
+          從你不喜歡的味道開始，找到剛剛好的咖啡。
+        </h2>
+        <p class="atelier-hero__lead">
+          不用先懂產區、處理法或杯測術語。回答幾個直覺問題，我們會像咖啡師一樣，幫你排除地雷、保留喜歡的風味線索。
+        </p>
+        <div class="atelier-hero__actions">
+          <a class="atelier-hero__button" href="#quiz-section">開始找風味</a>
+          <span class="atelier-hero__note">約 1 分鐘完成，適合第一次來的客人</span>
+        </div>
+        <div class="atelier-hero__marks" aria-label="網站特色">
+          <span>入門友善</span>
+          <span>感官校準</span>
+          <span>精品咖啡師邏輯</span>
+        </div>
+      </div>
+      <figure class="atelier-hero__visual">
+        <img src="assets/ui/atelier-intro.png" alt="咖啡杯、咖啡豆與風味筆記卡放在溫暖木桌上的精品咖啡館場景">
+      </figure>
+    </section>
 
     <!-- 模式標籤 -->
     <div class="mode-tabs" role="tablist" aria-label="推薦模式選擇">
@@ -56,8 +81,8 @@
 
     <!-- 入門模式（排除法問卷，預設顯示） -->
     <section id="quiz-section" aria-label="入門風味問卷">
-      <h2 class="section-title">找到你的第一杯</h2>
-      <p class="section-desc">回答 5 個簡單問題，我們幫你排除地雷、找出最適合的豆款</p>
+      <h2 class="section-title">建立你的咖啡味譜</h2>
+      <p class="section-desc">拋開專業名詞，跟著記憶中味道的感覺回答，就能慢慢靠近你的咖啡偏好。</p>
 
       <div class="progress-wrap">
         <div class="progress-dots" id="progress-dots" aria-hidden="true"></div>
@@ -285,6 +310,13 @@
       </div>
     </section>
 
+    <section class="guest-voice" aria-label="顧客使用感受">
+      <p class="guest-voice__quote">
+        「不用急著懂咖啡，從酸甜苦厚的感覺開始，慢慢找到屬於你心中的風味座標。」
+      </p>
+      <p class="guest-voice__caption">給第一次探索精品咖啡的人，也給想更清楚說出味道的你。</p>
+    </section>
+
   </main>
 
   <footer class="site-footer">
@@ -292,7 +324,7 @@
   </footer>
 
   <script src="data/beans.js?v=29"></script>
-  <script src="app.js?v=29"></script>
+  <script src="app.js?v=31"></script>
 </body>
 
 </html>

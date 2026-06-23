@@ -695,6 +695,22 @@ function renderDots(score) {
   ).join('');
 }
 
+function getBeanPersonality(bean) {
+  if (bean.acid >= 4 && bean.sweet >= 3) return '喜歡明亮果酸、想喝出層次感的人';
+  if (bean.body >= 4 && bean.bitter >= 3) return '偏好厚實、可可、低酸風味的人';
+  if (bean.sweet >= 4) return '喜歡圓潤甜感、希望咖啡好入口的人';
+  if (bean.bitter <= 2 && bean.body <= 3) return '想從乾淨、輕盈風味開始的人';
+  return '想要平衡、不想踩雷的日常飲用者';
+}
+
+function getRecommendReason(bean) {
+  const topTags = bean.tags.slice(0, 2).join('、');
+  if (bean.acid >= 4) return `它的 ${topTags} 很鮮明，酸感明亮但有風味支撐，不只是尖酸。`;
+  if (bean.body >= 4) return `它的口感厚實，${topTags} 風味會讓咖啡喝起來更有份量。`;
+  if (bean.sweet >= 4) return `它的甜感較明顯，${topTags} 讓整杯更圓潤、好親近。`;
+  return `它的 ${topTags} 表現穩定，適合作為找到自己風味座標的第一杯。`;
+}
+
 function renderBeanCard(bean, rank) {
   const rankLabel = rank === 0 ? '最推薦' : '次推薦';
   return `
@@ -749,6 +765,16 @@ function renderBeanCard(bean, rank) {
                 <circle cx="45.5" cy="44" r="2.6" stroke-width="0.5"/>
               </svg>
               <p class="bean-card__tasting-text">${bean.tasting}</p>
+            </div>
+            <div class="bean-card__guidance">
+              <div class="guidance-item">
+                <span class="guidance-item__label">為什麼推薦你</span>
+                <p>${getRecommendReason(bean)}</p>
+              </div>
+              <div class="guidance-item">
+                <span class="guidance-item__label">適合的客人</span>
+                <p>${getBeanPersonality(bean)}</p>
+              </div>
             </div>
           </div>
         </div>
