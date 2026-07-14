@@ -554,14 +554,14 @@ function calcMatch(distance) {
   return Math.max(0, Math.round((1 - distance / MAX_DIST) * 100));
 }
 
-function recommend(beans, pref) {
+function recommend(beans, pref, limit = 2) {
   return beans
     .map(b => {
       const dist = calcDistance(b, pref);
       return { ...b, distance: dist, match: calcMatch(dist) };
     })
-    .sort((a, b) => a.distance - b.distance)
-    .slice(0, 2);
+    .sort((a, b) => a.distance - b.distance || a.id.localeCompare(b.id, 'en'))
+    .slice(0, limit);
 }
 
 // 為輪播比較盤排序：[0]最推薦 / [1]次推薦 / [2..N] 其他依匹配度由高到低
@@ -607,7 +607,7 @@ function updateRadarFlavorNotes(bean) {
   el.innerHTML = `
     <span class="radar-flavor-notes__label">風味</span>
     <span class="radar-flavor-notes__list">
-      ${notes.map(note => `<span class="radar-flavor-note">${note}</span>`).join('')}
+      ${notes.map(note => `<span class="radar-flavor-note">${escapeHtml(note)}</span>`).join('')}
     </span>
   `;
 }
@@ -655,16 +655,28 @@ function exclusionRecommend(beans, answers) {
 
   const pref = answersToPref(answers);
 
-  let results = recommend(pool, pref);
+  const ranked = recommend(pool, pref, pool.length);
 
-  // Q5 標籤加權：在距離相近時作為排序依據
-  if (answers.flavor) {
+  if (isFallback) {
+    return { results: ranked.slice(0, 1), isFallback };
+  }
+
+  let results = ranked;
+
+  // Q5 標籤加權：只在距離相近的豆款中作為排序依據
+  if (answers.flavor && ranked.length > 0) {
     const preferred = answers.flavor === 'fruity' ? FRUITY_TAGS : NUTTY_TAGS;
-    results = [...results].sort((a, b) => {
+    const bestDistance = ranked[0].distance;
+    const nearby = ranked.filter(bean => bean.distance <= bestDistance + 1);
+    const remaining = ranked.filter(bean => bean.distance > bestDistance + 1);
+
+    nearby.sort((a, b) => {
       const sa = a.tags.filter(t => preferred.includes(t)).length;
       const sb = b.tags.filter(t => preferred.includes(t)).length;
-      return sb - sa || a.distance - b.distance;
+      return sb - sa || a.distance - b.distance || a.id.localeCompare(b.id, 'en');
     });
+
+    results = [...nearby, ...remaining];
   }
 
   return { results: results.slice(0, 2), isFallback };
@@ -683,6 +695,16 @@ function getPreferences() {
 // 呈現層（View Layer）— 只負責畫面顯示
 // =============================================
 let coffeeRadar = null;
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[char]);
+}
 
 function renderDots(score) {
   return Array.from({ length: 5 }, (_, i) =>
@@ -713,8 +735,17 @@ function getRecommendReason(bean) {
 
 function renderBeanCard(bean, rank) {
   const rankLabel = rank === 0 ? '最推薦' : '次推薦';
+  const safeId = escapeHtml(bean.id);
+  const safeName = escapeHtml(bean.name);
+  const safeNameEn = escapeHtml(bean.nameEn);
+  const safeOrigin = escapeHtml(bean.origin);
+  const safeEstate = escapeHtml(bean.estate);
+  const safeProcess = escapeHtml(bean.process);
+  const safeTasting = escapeHtml(bean.tasting);
+  const safeReason = escapeHtml(getRecommendReason(bean));
+  const safePersonality = escapeHtml(getBeanPersonality(bean));
   return `
-    <article class="bean-card ${rank === 0 ? 'bean-card--primary' : ''}" data-bean-id="${bean.id}" aria-label="${bean.name} 推薦結果">
+    <article class="bean-card ${rank === 0 ? 'bean-card--primary' : ''}" data-bean-id="${safeId}" aria-label="${safeName} 推薦結果">
       <div class="bean-card__header">
         <div class="bean-card__rank">${rankLabel}</div>
         <div class="bean-card__match">${bean.match}%<span class="match-label"> 匹配</span></div>
@@ -723,8 +754,8 @@ function renderBeanCard(bean, rank) {
       <div class="bean-card__body">
         <div class="bean-card__split">
           <div class="bean-card__split-left">
-            <h3 class="bean-name">${bean.name}</h3>
-            <p class="bean-name-en">${bean.nameEn}</p>
+            <h3 class="bean-name">${safeName}</h3>
+            <p class="bean-name-en">${safeNameEn}</p>
 
             <div class="bean-meta">
               <div class="bean-meta__item">
@@ -732,18 +763,18 @@ function renderBeanCard(bean, rank) {
                   <path fill="#A83838" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
                   <circle fill="#FFFFFF" cx="12" cy="9" r="2.5"/>
                 </svg>
-                <span class="bean-meta__text">${bean.origin}</span>
+                <span class="bean-meta__text">${safeOrigin}</span>
               </div>
               <div class="bean-meta__item">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                   <path d="M3 9h18M9 21V9"/>
                 </svg>
-                <span class="bean-meta__text">${bean.estate}</span>
+                <span class="bean-meta__text">${safeEstate}</span>
               </div>
             </div>
 
-            <span class="process-tag">${bean.process}</span>
+            <span class="process-tag">${safeProcess}</span>
           </div>
 
           <div class="bean-card__split-right">
@@ -764,16 +795,16 @@ function renderBeanCard(bean, rank) {
                 <circle cx="54.5" cy="44" r="2.6" stroke-width="0.5"/>
                 <circle cx="45.5" cy="44" r="2.6" stroke-width="0.5"/>
               </svg>
-              <p class="bean-card__tasting-text">${bean.tasting}</p>
+              <p class="bean-card__tasting-text">${safeTasting}</p>
             </div>
             <div class="bean-card__guidance">
               <div class="guidance-item">
                 <span class="guidance-item__label">為什麼推薦你</span>
-                <p>${getRecommendReason(bean)}</p>
+                <p>${safeReason}</p>
               </div>
               <div class="guidance-item">
                 <span class="guidance-item__label">適合的客人</span>
-                <p>${getBeanPersonality(bean)}</p>
+                <p>${safePersonality}</p>
               </div>
             </div>
           </div>
@@ -804,10 +835,11 @@ function renderBeanCard(bean, rank) {
       <div class="bean-card__tags">
         ${bean.tags.map(t => {
           const theme = getFlavorTheme(t);
+          const safeTag = escapeHtml(t);
           return `
             <span class="flavor-tag flavor-tag--${theme}">
               <span class="flavor-tag__icon">${FLAVOR_ICONS[theme]}</span>
-              <span class="flavor-tag__text">${t}</span>
+              <span class="flavor-tag__text">${safeTag}</span>
             </span>
           `;
         }).join('')}
@@ -1165,6 +1197,11 @@ function renderSpecimenCard(bean, idx) {
   const isBaseline = idx === 0;
   const ord = String(idx + 1).padStart(2, '0');
   const ariaLabel = `${bean.name}，匹配 ${bean.match}%，第 ${idx + 1} 款${isBaseline ? '（對照基準）' : ''}`;
+  const safeAriaLabel = escapeHtml(ariaLabel);
+  const safeProcess = escapeHtml(bean.process);
+  const safeName = escapeHtml(bean.name);
+  const safeNameEn = escapeHtml(bean.nameEn);
+  const safeOrigin = escapeHtml(bean.origin);
 
   return `
     <article
@@ -1172,19 +1209,19 @@ function renderSpecimenCard(bean, idx) {
       data-idx="${idx}"
       tabindex="0"
       role="button"
-      aria-label="${ariaLabel}"
+      aria-label="${safeAriaLabel}"
       aria-current="${idx === 0 ? 'true' : 'false'}"
     >
       ${isBaseline ? '<span class="specimen-card__rule" aria-hidden="true"></span>' : ''}
       <div class="specimen-card__top">
         <span class="specimen-card__ord">N°${ord}</span>
-        <span class="specimen-card__process">·${bean.process}</span>
+        <span class="specimen-card__process">·${safeProcess}</span>
       </div>
       <div class="specimen-card__name">
-        <h4 class="specimen-card__zh">${bean.name}</h4>
-        <p class="specimen-card__en">${bean.nameEn}</p>
+        <h4 class="specimen-card__zh">${safeName}</h4>
+        <p class="specimen-card__en">${safeNameEn}</p>
       </div>
-      <p class="specimen-card__origin">${bean.origin}</p>
+      <p class="specimen-card__origin">${safeOrigin}</p>
       <div class="specimen-card__match">
         <span class="specimen-card__match-num">${bean.match}</span>
         <span class="specimen-card__match-pct">％</span>
@@ -1224,9 +1261,11 @@ function selectCarouselIndex(idx, fromScroll = false) {
   // 規則：最推薦（baseBean）是粗體主角，當前選中（activeBean）是次要對照名稱
   const titleEl = document.getElementById('chart-bean-name');
   if (titleEl) {
+    const safeBaseName = escapeHtml(baseBean.name);
+    const safeActiveName = escapeHtml(activeBean.name);
     titleEl.innerHTML = (baseBean.id === activeBean.id)
-      ? `<strong>${baseBean.name}</strong> 的完整風味輪廓`
-      : `<strong>${baseBean.name}</strong> 對照 ${activeBean.name}`;
+      ? `<strong>${safeBaseName}</strong> 的完整風味輪廓`
+      : `<strong>${safeBaseName}</strong> 對照 ${safeActiveName}`;
   }
 
   // 進度尺
@@ -1435,16 +1474,21 @@ function renderQuestion(step) {
 
   card.innerHTML = `
     <p class="question-number">Q${step + 1} / ${QUESTIONS.length}</p>
-    <h3 class="question-text">${q.text}</h3>
-    <p class="question-hint">${q.hint}</p>
+    <h3 class="question-text">${escapeHtml(q.text)}</h3>
+    <p class="question-hint">${escapeHtml(q.hint)}</p>
     <div class="answer-btns">
-      ${q.options.map(opt => `
+      ${q.options.map(opt => {
+        const safeQid = escapeHtml(q.id);
+        const safeValue = escapeHtml(opt.value);
+        const safeLabel = escapeHtml(opt.label);
+        return `
         <button
           class="answer-btn${quizState.answers[q.id] === opt.value ? ' answer-btn--selected' : ''}"
-          data-qid="${q.id}"
-          data-value="${opt.value}"
-        >${opt.label}</button>
-      `).join('')}
+          data-qid="${safeQid}"
+          data-value="${safeValue}"
+        >${safeLabel}</button>
+      `;
+      }).join('')}
     </div>
   `;
 
