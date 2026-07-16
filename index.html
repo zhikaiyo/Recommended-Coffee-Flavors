@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css?v=34">
+  <link rel="stylesheet" href="style.css?v=41">
 </head>
 
 <body>
@@ -255,62 +255,53 @@
 
     <!-- 推薦結果（入門/進階模式共用，答完或滑桿互動後顯示） -->
     <section id="results-section" aria-label="推薦結果" hidden>
-      <h2 class="section-title">為你推薦</h2>
+      <div class="result-profile" id="result-profile" aria-live="polite">
+        <!-- 由 app.js 動態填入 -->
+      </div>
+      <h2 class="section-title">首選與備選</h2>
       <p class="section-desc" id="results-desc">根據你的偏好，從 8 款精品豆中挑出最接近的兩款</p>
       <div class="results-grid" id="results-grid" aria-live="polite" aria-atomic="true">
         <!-- 由 app.js 動態填入 -->
       </div>
     </section>
 
+    <!-- 兩款推薦怎麼選（入門/進階模式共用） -->
+    <section id="comparison-section" aria-label="兩款推薦怎麼選" hidden>
+      <p class="chapter-mark">II · HOW TO CHOOSE</p>
+      <h2 class="section-title">兩款推薦怎麼選</h2>
+      <p class="section-desc">先看你現在想喝的感覺，再從兩款不同的風味方向做選擇。</p>
+      <div id="recommendation-difference" class="recommendation-difference" aria-live="polite">
+        <!-- 由 app.js 動態填入 -->
+      </div>
+    </section>
+
     <!-- 雷達圖（入門/進階模式共用） -->
     <section id="chart-section" aria-label="風味輪廓圖" hidden>
-      <h2 class="section-title">風味輪廓</h2>
-      <p class="chart-meta" id="chart-bean-name">最推薦豆款的完整感官評鑑</p>
-      <div class="chart-container">
-        <div class="chart-canvas-wrap">
-          <canvas id="radar-chart" role="img" aria-label="咖啡風味雷達圖，顯示五個感官維度的分布"></canvas>
-          <div class="radar-icon-layer" id="radar-icon-layer" aria-hidden="true"></div>
-          <div class="radar-flavor-notes" id="radar-flavor-notes" aria-label="咖啡風味描述"></div>
+      <details class="professional-details" id="professional-flavor-details">
+        <summary class="professional-details__summary">
+          <span class="professional-details__copy">
+            <span class="professional-details__eyebrow">進階資料</span>
+            <span class="professional-details__title">查看專業風味圖</span>
+            <span class="professional-details__hint">比較酸甜苦厚與餘韻的完整輪廓</span>
+          </span>
+          <svg class="professional-details__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </summary>
+        <div class="professional-details__content">
+          <p class="chart-meta" id="chart-bean-name">最推薦豆款的完整感官評鑑</p>
+          <div class="chart-container">
+            <div class="chart-canvas-wrap">
+              <canvas id="radar-chart" role="img" aria-label="咖啡風味雷達圖，顯示五個感官維度的分布"></canvas>
+              <div class="radar-icon-layer" id="radar-icon-layer" aria-hidden="true"></div>
+              <div class="radar-flavor-notes" id="radar-flavor-notes" aria-label="咖啡風味描述"></div>
+            </div>
+          </div>
         </div>
-      </div>
+      </details>
     </section>
 
-    <!-- 風味比較盤（入門/進階模式共用） -->
-    <section id="comparison-section" aria-label="豆款風味比較盤" hidden>
-      <p class="chapter-mark">II · COMPARISON</p>
-      <h2 class="section-title">風味比較盤</h2>
-      <p class="section-desc">滑動卡片，雷達圖實線為最推薦的「對照基準」，虛線為當前選中的豆款輪廓</p>
-
-      <!-- 輪播 -->
-      <div class="bean-carousel-wrap">
-        <button class="carousel-arrow carousel-arrow--prev" id="carousel-prev" type="button" aria-label="上一款豆子" aria-controls="bean-carousel">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-
-        <div class="bean-carousel" id="bean-carousel" role="listbox" aria-label="豆款比較列表" tabindex="0">
-          <!-- 由 app.js 動態填入 -->
-        </div>
-
-        <button class="carousel-arrow carousel-arrow--next" id="carousel-next" type="button" aria-label="下一款豆子" aria-controls="bean-carousel">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- 進度尺 -->
-      <div class="carousel-progress" aria-hidden="true">
-        <span class="carousel-index" id="carousel-index">01 / 08</span>
-        <div class="carousel-rule">
-          <div class="carousel-rule-fill" id="carousel-rule-fill"></div>
-        </div>
-        <span class="carousel-hint">← 滑動 / 點箭頭比較 →</span>
-      </div>
-    </section>
-
-    <section class="guest-voice" aria-label="顧客使用感受">
+    <section class="guest-voice" id="guest-voice" aria-label="顧客使用感受" hidden>
       <p class="guest-voice__quote">
         「不用急著懂咖啡，從酸甜苦厚的感覺開始，慢慢找到屬於你心中的風味座標。」
       </p>
@@ -323,8 +314,8 @@
     <p>精品咖啡風味推薦系統 · 以 SCA 感官評鑑為基礎設計</p>
   </footer>
 
-  <script src="data/beans.js?v=29"></script>
-  <script src="app.js?v=32"></script>
+  <script src="data/beans.js?v=30"></script>
+  <script src="app.js?v=39"></script>
 </body>
 
 </html>

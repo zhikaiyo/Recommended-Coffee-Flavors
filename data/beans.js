@@ -43,7 +43,7 @@ const BEANS = [
     acid: 4, sweet: 3, bitter: 1, body: 2,
     aroma: 5, flavor: 4, aftertaste: 3,
     tags: ['花香', '茉莉', '檸檬', '水蜜桃'],
-    tasting: '入口像剛剝開的水蜜桃，果汁感乾淨明亮。中段轉出茉莉花茶的細緻香氣，尾韻像擠了一點檸檬皮油。整體輕盈通透，香氣在杯緣久久不散。',
+    tasting: '入口是清亮的水蜜桃果汁感，帶著細緻茉莉花香。尾韻浮出檸檬皮氣息，整體輕盈通透。',
   },
   {
     id: 'mandheling',
@@ -55,7 +55,7 @@ const BEANS = [
     acid: 1, sweet: 2, bitter: 4, body: 5,
     aroma: 3, flavor: 4, aftertaste: 5,
     tags: ['黑巧克力', '泥土', '草本', '杉木'],
-    tasting: '入口濃稠像剛煮好的黑巧克力，幾乎沒有酸味。中段帶著草本和杉木氣息，像走進雨後的森林。尾韻深沉乾淨，留下久久不散的可可餘味。',
+    tasting: '入口像濃厚黑巧克力，酸感低而口感飽滿。草本與杉木氣息在中段展開，尾韻留下深沉可可香。',
   },
   {
     id: 'gesha',
@@ -67,7 +67,7 @@ const BEANS = [
     acid: 4, sweet: 4, bitter: 1, body: 2,
     aroma: 5, flavor: 5, aftertaste: 4,
     tags: ['茉莉', '佛手柑', '蜂蜜', '熱帶水果'],
-    tasting: '杯緣就能聞到茉莉和佛手柑香氣，像打開一瓶高級香水。入口輕盈但風味層層展開——先是熱帶水果，再轉成蜂蜜尾韻。香氣綿長，每一口都像在品味一座花園。',
+    tasting: '茉莉與佛手柑香氣先在杯緣展開。入口輕盈，熱帶水果轉為蜂蜜甜感，尾韻細緻綿長。',
   },
   {
     id: 'blue-mountain',
@@ -79,7 +79,7 @@ const BEANS = [
     acid: 2, sweet: 3, bitter: 2, body: 3,
     aroma: 3, flavor: 3, aftertaste: 3,
     tags: ['奶油', '堅果', '柔和', '均衡'],
-    tasting: '入口圓潤像加了一點牛奶的咖啡，沒有任何尖銳感。風味是核桃和奶油的組合，像剛烤好的杏仁餅乾。整杯協調穩定，味道在口中緩緩展開。',
+    tasting: '入口圓潤柔和，沒有明顯尖銳感。核桃、奶油與杏仁餅乾般的香氣協調展開，餘韻平穩。',
   },
   {
     id: 'kenya-aa',
@@ -91,7 +91,7 @@ const BEANS = [
     acid: 5, sweet: 3, bitter: 2, body: 3,
     aroma: 4, flavor: 5, aftertaste: 4,
     tags: ['黑醋栗', '番茄', '莓果', '柑橘'],
-    tasting: '酸感非常明亮，像咬下熟透的黑醋栗。中段意外出現番茄汁的鮮甜，是很特別的風味記憶點。尾韻長且帶柑橘皮香，餘味在口中持續發亮。',
+    tasting: '熟黑醋栗般的明亮酸質先入口。中段帶番茄般鮮甜，尾韻留下柑橘皮香，個性鮮明。',
   },
   {
     id: 'colombia',
@@ -103,7 +103,7 @@ const BEANS = [
     acid: 3, sweet: 4, bitter: 2, body: 3,
     aroma: 3, flavor: 3, aftertaste: 3,
     tags: ['焦糖', '蘋果', '堅果', '均衡'],
-    tasting: '入口像加了焦糖的蘋果汁，酸甜比例剛好。中段轉成榛果香氣，尾韻帶一點奶油感。風味乾淨平衡，每一口都像節奏沉穩的小品。',
+    tasting: '焦糖蘋果般的酸甜感柔和均衡。中段浮出榛果與奶油香，尾韻乾淨，適合日常慢慢喝。',
   },
   {
     id: 'brazil-santos',
@@ -115,7 +115,7 @@ const BEANS = [
     acid: 1, sweet: 3, bitter: 3, body: 4,
     aroma: 3, flavor: 3, aftertaste: 3,
     tags: ['花生', '巧克力', '低酸', '醇厚'],
-    tasting: '口感濃稠像冰滴可可，幾乎沒有酸味。中段是炒花生和黑糖的組合，尾韻乾淨不苦。整杯醇厚溫潤，像一塊融化在口中的牛奶巧克力。',
+    tasting: '入口像濃郁可可，酸感低、口感厚實。炒花生與黑糖香氣接續展開，尾韻乾淨溫潤。',
   },
   {
     id: 'harrar',
@@ -127,6 +127,6 @@ const BEANS = [
     acid: 3, sweet: 2, bitter: 3, body: 3,
     aroma: 4, flavor: 4, aftertaste: 3,
     tags: ['藍莓', '葡萄酒', '野性', '發酵感'],
-    tasting: '聞起來像紅酒和成熟莓果，個性鮮明。入口有一點葡萄發酵的野性感，不適合膽小的舌頭。尾韻悠長帶藍莓果皮的微澀，在口中留下深刻印象。',
+    tasting: '紅酒與熟莓果香氣鮮明奔放。入口帶葡萄發酵感，尾韻留下藍莓果皮的微澀與悠長果香。',
   },
 ];

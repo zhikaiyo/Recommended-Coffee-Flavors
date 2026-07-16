@@ -564,18 +564,56 @@ function recommend(beans, pref, limit = 2) {
     .slice(0, limit);
 }
 
-// 為輪播比較盤排序：[0]最推薦 / [1]次推薦 / [2..N] 其他依匹配度由高到低
-// primaryResults 已含 distance + match，rest 用同一 pref 計算後接在後面
-function buildCarouselOrder(beans, pref, primaryResults) {
-  const primaryIds = new Set(primaryResults.map(b => b.id));
-  const rest = beans
-    .filter(b => !primaryIds.has(b.id))
-    .map(b => {
-      const dist = calcDistance(b, pref);
-      return { ...b, distance: dist, match: calcMatch(dist) };
-    })
-    .sort((a, b) => a.distance - b.distance);
-  return [...primaryResults, ...rest];
+const BEAN_CHOICE_SCENARIOS = {
+  yirgacheffe: '想喝茉莉花、水蜜桃與清亮柑橘感，選這款。',
+  mandheling: '想要黑巧克力、草本與厚實低酸感，選這款。',
+  gesha: '想喝細緻白花、佛手柑與蜂蜜茶感，選這款。',
+  'blue-mountain': '想要奶油堅果、柔和平衡又容易親近，選這款。',
+  'kenya-aa': '想喝黑醋栗與柑橘般鮮明多汁的果酸，選這款。',
+  colombia: '想要焦糖堅果、酸甜平衡又日常耐喝，選這款。',
+  'brazil-santos': '想喝花生可可、低酸厚甜與溫潤口感，選這款。',
+  harrar: '想喝酒香莓果與微發酵的野性風味，選這款。',
+};
+
+const BEAN_FLAVOR_DIRECTIONS = {
+  yirgacheffe: '花香柑橘調，輕盈明亮',
+  mandheling: '深色可可與草本木質調，厚實沉穩',
+  gesha: '白花、佛手柑與蜂蜜茶調，細緻飄逸',
+  'blue-mountain': '奶油堅果與柔和可可調，平衡順口',
+  'kenya-aa': '黑醋栗與柑橘莓果調，酸質鮮明多汁',
+  colombia: '焦糖、蘋果與堅果調，甜潤均衡',
+  'brazil-santos': '花生、巧克力與黑糖調，低酸醇厚',
+  harrar: '紅酒、熟莓果與葡萄發酵調，奔放有個性',
+};
+
+function getBeanChoiceCue(bean) {
+  if (BEAN_CHOICE_SCENARIOS[bean.id]) return BEAN_CHOICE_SCENARIOS[bean.id];
+  const notes = (bean.tags || []).slice(0, 2).join('、');
+  return `想喝${notes}風味，選這款。`;
+}
+
+function getBeanFlavorDirection(bean) {
+  return BEAN_FLAVOR_DIRECTIONS[bean.id] || (bean.tags || []).slice(0, 3).join('、');
+}
+
+function buildFlavorProfile(pref, flavorPreference = '') {
+  if (flavorPreference === 'fruity') {
+    return pref.acid >= 3
+      ? { name: '明亮花果型', summary: '你偏向清楚的花果香、自然甜感，以及喝起來較有光澤的酸質。' }
+      : { name: '柔甜果香型', summary: '你喜歡果香帶來的層次，但更在意柔和、甜潤與容易親近。' };
+  }
+
+  if (flavorPreference === 'nutty') {
+    return pref.body >= 4 || pref.bitter >= 3
+      ? { name: '醇厚可可型', summary: '你偏向可可、堅果與較有份量的口感，喜歡沉穩而延續的味道。' }
+      : { name: '焦糖堅果型', summary: '你喜歡焦糖與堅果般的熟悉香氣，希望咖啡平衡、甜潤又耐喝。' };
+  }
+
+  if (pref.acid >= 4) return { name: '明亮果香型', summary: '你喜歡鮮明果酸與清楚層次，期待每一口都有活潑變化。' };
+  if (pref.sweet >= 4 && pref.body <= 3) return { name: '甜潤輕盈型', summary: '你在意自然甜感與乾淨口感，偏好柔順、不厚重的咖啡。' };
+  if (pref.body >= 4) return { name: '厚實醇香型', summary: '你喜歡有份量、包覆感明顯的口感，以及沉穩延續的香氣。' };
+  if (pref.bitter >= 4) return { name: '深沉苦甜型', summary: '你能接受清楚苦韻，偏好可可、烘烤與較深沉的風味表現。' };
+  return { name: '平衡日常型', summary: '你在酸甜苦厚之間尋找平衡，希望咖啡順口、清楚又適合日常。' };
 }
 
 // 雷達 5 軸資料抽出工具
@@ -708,138 +746,97 @@ function escapeHtml(value) {
 
 function renderDots(score) {
   return Array.from({ length: 5 }, (_, i) =>
-    `<svg class="bean-dot ${i < score ? 'bean-dot--filled' : ''}" viewBox="0 0 12 16" aria-hidden="true">
-      <g transform="rotate(-14 6 8)">
-        <ellipse cx="6" cy="8" rx="4.3" ry="7"/>
-        <path class="bean-dot__groove" d="M6 1.8 Q3.6 5 4.2 8 Q4.8 11 6 14.2" fill="none"/>
-      </g>
-    </svg>`
+    `<span class="bean-dot ${i < score ? 'bean-dot--filled' : ''}" aria-hidden="true"></span>`
   ).join('');
 }
 
-function getBeanPersonality(bean) {
-  if (bean.acid >= 4 && bean.sweet >= 3) return '喜歡明亮果酸、想喝出層次感的人';
-  if (bean.body >= 4 && bean.bitter >= 3) return '偏好厚實、可可、低酸風味的人';
-  if (bean.sweet >= 4) return '喜歡圓潤甜感、希望咖啡好入口的人';
-  if (bean.bitter <= 2 && bean.body <= 3) return '想從乾淨、輕盈風味開始的人';
-  return '想要平衡、不想踩雷的日常飲用者';
+function getTastingSummary(bean) {
+  const sentences = String(bean.tasting || '')
+    .split('。')
+    .map(sentence => sentence.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  return sentences.length ? `${sentences.join('。')}。` : getBeanFlavorDirection(bean);
 }
 
-function getRecommendReason(bean) {
-  const topTags = bean.tags.slice(0, 2).join('、');
-  if (bean.acid >= 4) return `它的 ${topTags} 很鮮明，酸感明亮但有風味支撐，不只是尖酸。`;
-  if (bean.body >= 4) return `它的口感厚實，${topTags} 風味會讓咖啡喝起來更有份量。`;
-  if (bean.sweet >= 4) return `它的甜感較明顯，${topTags} 讓整杯更圓潤、好親近。`;
-  return `它的 ${topTags} 表現穩定，適合作為找到自己風味座標的第一杯。`;
-}
-
-function renderBeanCard(bean, rank) {
+function renderBeanCard(bean, rank, rankingMode = 'distance') {
   const rankLabel = rank === 0 ? '最推薦' : '次推薦';
+  const isFlavorPriority = rankingMode === 'flavor';
   const safeId = escapeHtml(bean.id);
   const safeName = escapeHtml(bean.name);
   const safeNameEn = escapeHtml(bean.nameEn);
   const safeOrigin = escapeHtml(bean.origin);
   const safeEstate = escapeHtml(bean.estate);
   const safeProcess = escapeHtml(bean.process);
-  const safeTasting = escapeHtml(bean.tasting);
-  const safeReason = escapeHtml(getRecommendReason(bean));
-  const safePersonality = escapeHtml(getBeanPersonality(bean));
+  const safeTasting = escapeHtml(getTastingSummary(bean));
+  const safeScenario = escapeHtml(getBeanChoiceCue(bean));
   return `
     <article class="bean-card ${rank === 0 ? 'bean-card--primary' : ''}" data-bean-id="${safeId}" aria-label="${safeName} 推薦結果">
       <div class="bean-card__header">
-        <div class="bean-card__rank">${rankLabel}</div>
-        <div class="bean-card__match">${bean.match}%<span class="match-label"> 匹配</span></div>
+        <div class="bean-card__rank-group">
+          <div class="bean-card__rank">${rankLabel}</div>
+          ${isFlavorPriority ? '<span class="bean-card__rank-note">風味方向優先</span>' : ''}
+        </div>
+        <div class="bean-card__match">${bean.match}%<span class="match-label">${isFlavorPriority ? '四項接近' : '匹配'}</span></div>
       </div>
 
-      <div class="bean-card__body">
-        <div class="bean-card__split">
-          <div class="bean-card__split-left">
+      <div class="bean-card__overview">
+        <div class="bean-card__identity">
+          <div class="bean-card__identity-heading">
             <h3 class="bean-name">${safeName}</h3>
             <p class="bean-name-en">${safeNameEn}</p>
-
-            <div class="bean-meta">
-              <div class="bean-meta__item">
-                <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fill="#A83838" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                  <circle fill="#FFFFFF" cx="12" cy="9" r="2.5"/>
-                </svg>
-                <span class="bean-meta__text">${safeOrigin}</span>
-              </div>
-              <div class="bean-meta__item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  <path d="M3 9h18M9 21V9"/>
-                </svg>
-                <span class="bean-meta__text">${safeEstate}</span>
-              </div>
-            </div>
-
-            <span class="process-tag">${safeProcess}</span>
           </div>
-
-          <div class="bean-card__split-right">
-            <div class="bean-card__tasting">
-              <svg class="bean-card__leaf-decor" viewBox="0 0 100 80" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M88 8 Q72 18 58 28 Q44 40 32 56 Q24 66 16 72" stroke-width="0.7"/>
-                <path d="M72 14 Q80 7 88 11 Q83 20 72 14 Z" stroke-width="0.55"/>
-                <line x1="72" y1="14" x2="86" y2="11" stroke-width="0.4"/>
-                <path d="M58 28 Q64 19 74 24 Q66 32 58 28 Z" stroke-width="0.55"/>
-                <line x1="58" y1="28" x2="73" y2="24" stroke-width="0.4"/>
-                <path d="M52 32 Q42 26 36 34 Q44 42 52 32 Z" stroke-width="0.55"/>
-                <line x1="52" y1="32" x2="37" y2="34" stroke-width="0.4"/>
-                <path d="M44 48 Q50 39 60 44 Q53 53 44 48 Z" stroke-width="0.55"/>
-                <line x1="44" y1="48" x2="59" y2="44" stroke-width="0.4"/>
-                <path d="M40 52 Q30 47 24 56 Q32 63 40 52 Z" stroke-width="0.55"/>
-                <line x1="40" y1="52" x2="25" y2="56" stroke-width="0.4"/>
-                <circle cx="50" cy="40" r="2.6" stroke-width="0.5"/>
-                <circle cx="54.5" cy="44" r="2.6" stroke-width="0.5"/>
-                <circle cx="45.5" cy="44" r="2.6" stroke-width="0.5"/>
+          <div class="bean-card__identity-meta">
+            <div class="bean-card__identity-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#A83838" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                <circle fill="#FFFFFF" cx="12" cy="9" r="2.5"/>
               </svg>
-              <p class="bean-card__tasting-text">${safeTasting}</p>
+              <span>${safeOrigin}</span>
             </div>
-            <div class="bean-card__guidance">
-              <div class="guidance-item">
-                <span class="guidance-item__label">為什麼推薦你</span>
-                <p>${safeReason}</p>
-              </div>
-              <div class="guidance-item">
-                <span class="guidance-item__label">適合的客人</span>
-                <p>${safePersonality}</p>
-              </div>
+            <div class="bean-card__identity-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M3 9h18M9 21V9"/>
+              </svg>
+              <span>${safeEstate}</span>
             </div>
           </div>
+          <span class="bean-card__process-tag">${safeProcess}</span>
         </div>
-
-        <div class="bean-card__scores-box">
-          <div class="bean-card__scores">
-            <div class="score-row">
-              <span class="score-dim">酸度</span>
-              <div class="score-dots" aria-label="酸度 ${bean.acid} 分">${renderDots(bean.acid)}</div>
-            </div>
-            <div class="score-row">
-              <span class="score-dim">甜感</span>
-              <div class="score-dots" aria-label="甜感 ${bean.sweet} 分">${renderDots(bean.sweet)}</div>
-            </div>
-            <div class="score-row">
-              <span class="score-dim">苦度</span>
-              <div class="score-dots" aria-label="苦度 ${bean.bitter} 分">${renderDots(bean.bitter)}</div>
-            </div>
-            <div class="score-row">
-              <span class="score-dim">厚實</span>
-              <div class="score-dots" aria-label="厚實度 ${bean.body} 分">${renderDots(bean.body)}</div>
-            </div>
-          </div>
+        <div class="bean-card__tasting-panel">
+          <p>${safeTasting}</p>
         </div>
       </div>
 
-      <div class="bean-card__tags">
-        ${bean.tags.map(t => {
-          const theme = getFlavorTheme(t);
-          const safeTag = escapeHtml(t);
+      <p class="bean-card__scenario">${safeScenario}</p>
+      <div class="bean-card__scores-box">
+        <div class="bean-card__scores">
+          <div class="score-row">
+            <span class="score-dim">酸度</span>
+            <span class="score-dots" aria-label="酸度 ${bean.acid} 分">${renderDots(bean.acid)}</span>
+          </div>
+          <div class="score-row">
+            <span class="score-dim">甜感</span>
+            <span class="score-dots" aria-label="甜感 ${bean.sweet} 分">${renderDots(bean.sweet)}</span>
+          </div>
+          <div class="score-row">
+            <span class="score-dim">苦度</span>
+            <span class="score-dots" aria-label="苦度 ${bean.bitter} 分">${renderDots(bean.bitter)}</span>
+          </div>
+          <div class="score-row">
+            <span class="score-dim">厚實</span>
+            <span class="score-dots" aria-label="厚實度 ${bean.body} 分">${renderDots(bean.body)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="bean-card__tags" aria-label="主要風味">
+        ${bean.tags.map(tag => {
+          const theme = getFlavorTheme(tag);
           return `
             <span class="flavor-tag flavor-tag--${theme}">
               <span class="flavor-tag__icon">${FLAVOR_ICONS[theme]}</span>
-              <span class="flavor-tag__text">${safeTag}</span>
+              <span class="flavor-tag__text">${escapeHtml(tag)}</span>
             </span>
           `;
         }).join('')}
@@ -848,9 +845,20 @@ function renderBeanCard(bean, rank) {
   `;
 }
 
-function renderResults(results) {
+function renderFlavorProfile(pref, flavorPreference = '') {
+  const container = document.getElementById('result-profile');
+  if (!container) return;
+  const profile = buildFlavorProfile(pref, flavorPreference);
+  container.innerHTML = `
+    <p class="result-profile__eyebrow">YOUR FLAVOR PROFILE</p>
+    <h2 class="result-profile__name">${escapeHtml(profile.name)}</h2>
+    <p class="result-profile__summary">${escapeHtml(profile.summary)}</p>
+  `;
+}
+
+function renderResults(results, rankingMode = 'distance') {
   const grid = document.getElementById('results-grid');
-  grid.innerHTML = results.map((bean, i) => renderBeanCard(bean, i)).join('');
+  grid.innerHTML = results.map((bean, i) => renderBeanCard(bean, i, rankingMode)).join('');
 }
 
 // =============================================
@@ -1181,212 +1189,82 @@ function showResultsSections(show) {
   document.getElementById('chart-section').hidden      = !show;
   const cmp = document.getElementById('comparison-section');
   if (cmp) cmp.hidden = !show;
+  const guestVoice = document.getElementById('guest-voice');
+  if (guestVoice) guestVoice.hidden = !show;
 }
 
 // =============================================
-// 輪播比較盤（Comparison Carousel）
+// 兩款推薦怎麼選
 // =============================================
-const carouselState = {
-  ordered: [],         // 排序後的全部豆款（[0]=最推薦、[1]=次推薦、後續依匹配度）
-  activeIdx: 0,        // 當前選中索引
-  observer: null,      // IntersectionObserver 實例
-  bound: false,        // 箭頭/鍵盤是否已綁定
-};
-
-function renderSpecimenCard(bean, idx) {
-  const isBaseline = idx === 0;
-  const ord = String(idx + 1).padStart(2, '0');
-  const ariaLabel = `${bean.name}，匹配 ${bean.match}%，第 ${idx + 1} 款${isBaseline ? '（對照基準）' : ''}`;
-  const safeAriaLabel = escapeHtml(ariaLabel);
-  const safeProcess = escapeHtml(bean.process);
+function renderDifferenceBean(bean, rank, rankingMode) {
   const safeName = escapeHtml(bean.name);
-  const safeNameEn = escapeHtml(bean.nameEn);
+  const safeProcess = escapeHtml(bean.process);
   const safeOrigin = escapeHtml(bean.origin);
-
+  const safeCue = escapeHtml(getBeanChoiceCue(bean));
+  const isFlavorPriority = rankingMode === 'flavor';
+  const positionLabel = rank === 'primary'
+    ? (isFlavorPriority ? '風味方向優先' : '四項分數最接近')
+    : '另一種相近選擇';
   return `
-    <article
-      class="specimen-card${isBaseline ? ' specimen-card--baseline' : ''}"
-      data-idx="${idx}"
-      tabindex="0"
-      role="button"
-      aria-label="${safeAriaLabel}"
-      aria-current="${idx === 0 ? 'true' : 'false'}"
-    >
-      ${isBaseline ? '<span class="specimen-card__rule" aria-hidden="true"></span>' : ''}
-      <div class="specimen-card__top">
-        <span class="specimen-card__ord">N°${ord}</span>
-        <span class="specimen-card__process">·${safeProcess}</span>
+    <article class="difference-bean difference-bean--${rank}">
+      <div class="difference-bean__topline">
+        <span class="difference-bean__rank">${rank === 'primary' ? '首選' : '備選'}</span>
+        <span class="difference-bean__position">${positionLabel}</span>
       </div>
-      <div class="specimen-card__name">
-        <h4 class="specimen-card__zh">${safeName}</h4>
-        <p class="specimen-card__en">${safeNameEn}</p>
-      </div>
-      <p class="specimen-card__origin">${safeOrigin}</p>
-      <div class="specimen-card__match">
-        <span class="specimen-card__match-num">${bean.match}</span>
-        <span class="specimen-card__match-pct">％</span>
-      </div>
-      ${isBaseline ? '<span class="specimen-card__baseline-tag">對照基準 · BASELINE</span>' : ''}
+      <h3 class="difference-bean__name">${safeName}</h3>
+      <p class="difference-bean__meta">${safeOrigin} · ${safeProcess}</p>
+      <p class="difference-bean__cue">${safeCue}</p>
     </article>
   `;
 }
 
-function renderCarouselCards(ordered) {
-  const track = document.getElementById('bean-carousel');
-  if (!track) return;
-  track.innerHTML = ordered.map((bean, i) => renderSpecimenCard(bean, i)).join('');
+function renderFlavorDirection(bean, rank) {
+  const safeName = escapeHtml(bean.name);
+  const safeDirection = escapeHtml(getBeanFlavorDirection(bean));
+  return `
+    <div class="difference-flavor difference-flavor--${rank}">
+      <span class="difference-flavor__bean">${safeName}</span>
+      <p>${safeDirection}</p>
+    </div>
+  `;
 }
 
-// 切換選中卡片：同步雷達、卡片狀態、進度尺、箭頭
-function selectCarouselIndex(idx, fromScroll = false) {
-  const total = carouselState.ordered.length;
-  if (total === 0) return;
-  idx = Math.max(0, Math.min(total - 1, idx));
-  const baseBean   = carouselState.ordered[0];
-  const activeBean = carouselState.ordered[idx];
-  carouselState.activeIdx = idx;
+function renderRecommendationDifference(results, rankingMode = 'distance') {
+  const container = document.getElementById('recommendation-difference');
+  if (!container || results.length === 0) return;
 
-  // 卡片視覺狀態
-  document.querySelectorAll('.specimen-card').forEach(card => {
-    const cardIdx = parseInt(card.dataset.idx);
-    const isActive = cardIdx === idx;
-    card.classList.toggle('specimen-card--active', isActive);
-    card.setAttribute('aria-current', isActive ? 'true' : 'false');
-  });
-
-  // 雷達雙線
-  renderChartComparison(baseBean, activeBean);
-
-  // 標題：在對照基準時顯示完整輪廓，比對其他款時顯示雙方名稱
-  // 規則：最推薦（baseBean）是粗體主角，當前選中（activeBean）是次要對照名稱
-  const titleEl = document.getElementById('chart-bean-name');
-  if (titleEl) {
-    const safeBaseName = escapeHtml(baseBean.name);
-    const safeActiveName = escapeHtml(activeBean.name);
-    titleEl.innerHTML = (baseBean.id === activeBean.id)
-      ? `<strong>${safeBaseName}</strong> 的完整風味輪廓`
-      : `<strong>${safeBaseName}</strong> 對照 ${safeActiveName}`;
+  const [primary, secondary] = results;
+  if (!secondary) {
+    container.innerHTML = `
+      <p class="difference-empty">目前只有一款豆子符合你的底線，先從這款開始最不容易踩雷。</p>
+    `;
+    renderChart(primary);
+    updateChartTitle(primary);
+    return;
   }
 
-  // 進度尺
-  const idxEl  = document.getElementById('carousel-index');
-  const fillEl = document.getElementById('carousel-rule-fill');
-  if (idxEl)  idxEl.textContent = `${String(idx + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
-  if (fillEl) fillEl.style.width = `${((idx + 1) / total) * 100}%`;
+  container.innerHTML = `
+    <div class="difference-beans">
+      ${renderDifferenceBean(primary, 'primary', rankingMode)}
+      ${renderDifferenceBean(secondary, 'secondary', rankingMode)}
+    </div>
+    <div class="difference-breakdown" aria-label="首選與備選的風味方向比較">
+      <div class="difference-row difference-row--flavor">
+        <div class="difference-row__heading">
+          <h3>風味方向</h3>
+          <p>兩款最關鍵的個性差別</p>
+        </div>
+        <div class="difference-flavors">
+          ${renderFlavorDirection(primary, 'primary')}
+          ${renderFlavorDirection(secondary, 'secondary')}
+        </div>
+      </div>
+    </div>
+  `;
 
-  // 箭頭啟停
-  const prevBtn = document.getElementById('carousel-prev');
-  const nextBtn = document.getElementById('carousel-next');
-  if (prevBtn) prevBtn.disabled = (idx === 0);
-  if (nextBtn) nextBtn.disabled = (idx === total - 1);
-
-  // 主動切換時捲動到中央
-  if (!fromScroll) {
-    const target = document.querySelector(`.specimen-card[data-idx="${idx}"]`);
-    if (target) target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }
-}
-
-// 用 IntersectionObserver 偵測哪張卡片捲到了輪播中央
-function setupCarouselObserver() {
-  const track = document.getElementById('bean-carousel');
-  if (!track) return;
-
-  if (carouselState.observer) carouselState.observer.disconnect();
-
-  carouselState.observer = new IntersectionObserver((entries) => {
-    // 找出最接近中央的進入卡片
-    let bestEntry = null;
-    let bestRatio = 0;
-    entries.forEach(entry => {
-      if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
-        bestRatio = entry.intersectionRatio;
-        bestEntry = entry;
-      }
-    });
-    if (bestEntry) {
-      const idx = parseInt(bestEntry.target.dataset.idx);
-      if (idx !== carouselState.activeIdx) {
-        selectCarouselIndex(idx, true);
-      }
-    }
-  }, {
-    root: track,
-    rootMargin: '0% -42% 0% -42%',  // 只觀察輪播中央約 16% 的橫向區帶
-    threshold: [0.4, 0.6, 0.8],
-  });
-
-  document.querySelectorAll('.specimen-card').forEach(card => {
-    carouselState.observer.observe(card);
-  });
-}
-
-function bindCarouselControls() {
-  if (carouselState.bound) return;
-  carouselState.bound = true;
-
-  const prev = document.getElementById('carousel-prev');
-  const next = document.getElementById('carousel-next');
-  prev?.addEventListener('click', () => selectCarouselIndex(carouselState.activeIdx - 1));
-  next?.addEventListener('click', () => selectCarouselIndex(carouselState.activeIdx + 1));
-
-  const track = document.getElementById('bean-carousel');
-  if (!track) return;
-
-  // 鍵盤左右切換 + Enter / Space 點選
-  track.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      selectCarouselIndex(carouselState.activeIdx - 1);
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      selectCarouselIndex(carouselState.activeIdx + 1);
-    } else if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('specimen-card')) {
-      e.preventDefault();
-      const idx = parseInt(e.target.dataset.idx);
-      selectCarouselIndex(idx);
-    }
-  });
-
-  // 點擊卡片直接選中
-  track.addEventListener('click', (e) => {
-    const card = e.target.closest('.specimen-card');
-    if (!card) return;
-    const idx = parseInt(card.dataset.idx);
-    selectCarouselIndex(idx);
-  });
-
-  // 桌機滑鼠拖拉（手機原生 touch 已支援）
-  let isDragging = false;
-  let dragStartX = 0;
-  let scrollStartX = 0;
-  track.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    dragStartX = e.pageX;
-    scrollStartX = track.scrollLeft;
-    track.classList.add('is-dragging');
-  });
-  window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    track.scrollLeft = scrollStartX - (e.pageX - dragStartX);
-  });
-  window.addEventListener('mouseup', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    track.classList.remove('is-dragging');
-  });
-}
-
-// 對外主入口：依排序好的豆款重建輪播 + 雷達雙線
-function renderComparison(orderedBeans) {
-  carouselState.ordered = orderedBeans;
-  renderCarouselCards(orderedBeans);
-  bindCarouselControls();
-  setupCarouselObserver();
-  // 初次渲染（含滑桿改動觸發的重繪）：fromScroll=true → 不執行 scrollIntoView
-  // 這樣移動滑桿時頁面不會自動跳到比較盤位置；輪播本身因為 innerHTML 重設自然歸位
-  selectCarouselIndex(0, true);
+  renderChartComparison(primary, secondary);
+  const title = document.getElementById('chart-bean-name');
+  if (title) title.innerHTML = `<strong>${escapeHtml(primary.name)}</strong> 對照 ${escapeHtml(secondary.name)}`;
 }
 
 function updateChartTitle(bean) {
@@ -1426,11 +1304,11 @@ async function update() {
   const beans   = await fetchBeans();
   const pref    = getPreferences();
   const results = recommend(beans, pref);
-  const ordered = buildCarouselOrder(beans, pref, results);
 
   showResultsSections(true);
+  renderFlavorProfile(pref);
   renderResults(results);
-  renderComparison(ordered);  // 同時負責雷達雙線、Δ 面板、卡片、標題
+  renderRecommendationDifference(results);
 }
 
 function bindSliders() {
@@ -1518,8 +1396,7 @@ function handleAnswer(qId, value) {
 async function showQuizResults() {
   const beans = await fetchBeans();
   const { results, isFallback } = exclusionRecommend(beans, quizState.answers);
-  const pref    = answersToPref(quizState.answers);
-  const ordered = buildCarouselOrder(beans, pref, results);
+  const pref = answersToPref(quizState.answers);
 
   showResultsSections(true);
 
@@ -1527,7 +1404,7 @@ async function showQuizResults() {
   if (descEl) {
     descEl.textContent = isFallback
       ? '你的底線條件比較嚴格，以下是整體最接近的豆款，供你參考'
-      : '根據你的底線，從 8 款精品豆中篩選出最適合的推薦';
+      : '風味方向優先排序；百分比表示酸、甜、苦與厚實度的接近程度。';
   }
 
   if (isFallback) {
@@ -1540,8 +1417,9 @@ async function showQuizResults() {
     }
   }
 
-  renderResults(results);
-  renderComparison(ordered);
+  renderFlavorProfile(pref, quizState.answers.flavor);
+  renderResults(results, isFallback ? 'distance' : 'flavor');
+  renderRecommendationDifference(results, isFallback ? 'distance' : 'flavor');
   renderRestartBtn();
 
   // 捲動到結果區
@@ -1619,6 +1497,17 @@ function bindModeTabs() {
   document.getElementById('tab-slider')?.addEventListener('click', () => switchMode('slider'));
 }
 
+function bindProfessionalDetails() {
+  const details = document.getElementById('professional-flavor-details');
+  details?.addEventListener('toggle', () => {
+    if (!details.open || !coffeeRadar) return;
+    requestAnimationFrame(() => {
+      coffeeRadar.resize();
+      coffeeRadar.draw();
+    });
+  });
+}
+
 // =============================================
 // 初始化
 // =============================================
@@ -1626,6 +1515,7 @@ async function init() {
   bindModeTabs();
   bindSliders();
   bindQuizBack();
+  bindProfessionalDetails();
 
   // 預設顯示入門模式第 1 題
   renderQuestion(0);
